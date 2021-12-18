@@ -1,114 +1,105 @@
 'use strict';
 
-let rollback = 80;
-let title;
-let screens;
-let screenPrice;
-let adaptive;
-let service1;
-let servicePrice1;
-let service2;
-let servicePrice2;
+let appPriceCalc = {
+    rollback :80,
+    title : '',
+    screens : '',
+    screenPrice : 0,
+    adaptive : true,
+    service1 : '',
+    servicePrice1 : 0,
+    service2 : '',
+    servicePrice2 : 0,
+    fullPrice : 0, 
+    servicePercentPrice : 0,
+    allServicePrice : 0,
 
-let fullPrice;
-let servicePercentPrice;
-let allServicePrice;
+    start : function(){
+        appPriceCalc.asking();
+        appPriceCalc.title = appPriceCalc.getTitle(appPriceCalc.title);
+        appPriceCalc.screens = appPriceCalc.screens.toLowerCase().replaceAll(' ','').split(',');
+        appPriceCalc.allServicePrice = appPriceCalc.getAllServicePrices();
+        appPriceCalc.fullPrice =  appPriceCalc.getFullPrice(appPriceCalc.screenPrice, appPriceCalc.allServicePrice);
+        appPriceCalc.servicePercentPrice = appPriceCalc.getServicePercentPrices(appPriceCalc.fullPrice, appPriceCalc.rollback);
+        appPriceCalc.logger();
+    },
 
-
-
-const asking = function(){
-    title = prompt('Как называется ваш проект?', "Калькулятор верстки");
-    screens = prompt("Какие типы экранов нужно разработать?", "Простые, Сложные, Разные");
-    
-    while (!isNumber(screenPrice)){
-        screenPrice = +prompt('Сколько будет стоить данная работа?', "15000");
-    }
-    adaptive = confirm('Нужен ли адаптив на сайте?');
-
-};
-
-
-const isNumber = function(num){
-
-    return( !isNaN(parseFloat(num)) && isFinite(num));
-};
-
-
-const getAllServicePrices = function(){
-    let i = 0;
-    let sum = 0;
-    do {
+    asking : function(){
+        appPriceCalc.title = prompt('Как называется ваш проект?', "Калькулятор верстки");
+        appPriceCalc.screens = prompt("Какие типы экранов нужно разработать?", "Простые, Сложные, Разные");
         
-        if (i === 0) {
-            service1 = prompt('Какой дополнительный тип услуги нужен?','111');
-            servicePrice1 = prompt('Сколько это будет стоить?');
-            if (isNumber(servicePrice1)){
-                sum += +servicePrice1;
-                i++;
+        do {
+            appPriceCalc.screenPrice = +prompt('Сколько будет стоить данная работа?', "15000");
+        }while (!appPriceCalc.isNumber(appPriceCalc.screenPrice))
+        appPriceCalc.adaptive = confirm('Нужен ли адаптив на сайте?');
+    
+    },
+
+    logger : function(){
+    console.log(appPriceCalc.showTypeOf(appPriceCalc.title));
+    console.log(appPriceCalc.showTypeOf(appPriceCalc.fullPrice));
+    console.log(appPriceCalc.showTypeOf(appPriceCalc.adaptive));
+    console.log(appPriceCalc.screens);
+    console.log(appPriceCalc.getRollbackMessage(appPriceCalc.fullPrice));
+    console.log(appPriceCalc.servicePercentPrice);
+    },
+    
+    isNumber : function(num){
+    return( !isNaN(parseFloat(num)) && isFinite(num));
+    },
+    getAllServicePrices : function(){
+        let i = 0;
+        let sum = 0;
+        do {            
+            if (i === 0) {
+                appPriceCalc.service1 = prompt('Какой дополнительный тип услуги нужен?','111');
+                appPriceCalc.servicePrice1 = prompt('Сколько это будет стоить?');
+                if (appPriceCalc.isNumber(appPriceCalc.servicePrice1)){
+                    sum += +appPriceCalc.servicePrice1;
+                    i++;
+                }
+            }
+            if (i === 1) {
+                appPriceCalc.service2 = prompt('Какой дополнительный тип услуги нужен?','222');
+                appPriceCalc.servicePrice2 = prompt('Сколько это будет стоить?');
+                if (appPriceCalc.isNumber(appPriceCalc.servicePrice2)){
+                    sum += +appPriceCalc.servicePrice2;
+                    i++;
+                }
+                
+            }
+    
+        } while (i < 2);
+    
+        return sum;
+    },
+    getFullPrice : function(price, servicePrices){
+        return price + servicePrices;
+    },
+    getTitle : function(str){
+        str = str.toLowerCase();
+        for (let i = 0; i < str.length; i++){
+            if (str[i] != ' ') {
+                str = str.replace(str[i],str[i].toUpperCase());
+                break;
             }
         }
-        if (i === 1) {
-            service2 = prompt('Какой дополнительный тип услуги нужен?','222');
-            servicePrice2 = prompt('Сколько это будет стоить?');
-            if (isNumber(servicePrice2)){
-                sum += +servicePrice2;
-                i++;
-            }
-            
-        }
-
-    } while (i < 2);
-
-    return sum;
-};
-
-function getFullPrice(price, servicePrices){
-    return price + servicePrices;
+        return str;
+    },
+    getServicePercentPrices : function(fullPrice, rollbackPrice){
+        return Math.round(fullPrice*(rollbackPrice/100));
+    },
+    getRollbackMessage : function(price){
+        if (price >= 30000) {return 'Даем скидку в 10%';}
+            else if (price >= 15000 && price < 30000) {return 'Даем скидку в 5%';}
+            else if (price < 15000 && price >= 0) {return 'Скидка не предусмотрена';}
+            else {return 'Что то пошло не так';}
+    },
+    showTypeOf : function(vari){
+        return vari + ' ' + typeof vari;
+    },   
 }
 
-const getTitle = function(str){
-    str = str.toLowerCase();
-    for (let i = 0; i < str.length; i++){
-        if (str[i] != ' ') {
-            str = str.replace(str[i],str[i].toUpperCase());
-            break;
-        }
-    }
-    return str;
-};
 
-const getServicePercentPrices = function(fullPrice, rollbackPrice){
-    return Math.round(fullPrice - rollbackPrice);
-};
-
-const getRollbackMessage = function(price){
-    if (price >= 30000) {return 'Даем скидку в 10%';}
-        else if (price >= 15000 && price < 30000) {return 'Даем скидку в 5%';}
-        else if (price < 15000 && price >= 0) {return 'Скидка не предусмотрена';}
-        else {return 'Что то пошло не так';}
-};
-
-const showTypeOf = function(variable){
-    return variable + ' ' + typeof variable;
-};
-
-
-asking();
-title = getTitle(title);
-screens = screens.toLowerCase().replaceAll(' ','').split(',');
-allServicePrice = getAllServicePrices();
-fullPrice =  getFullPrice(screenPrice, allServicePrice);
-servicePercentPrice = getServicePercentPrices(fullPrice, rollback);
-
-
-
-console.log(showTypeOf(title));
-console.log(showTypeOf(fullPrice));
-console.log(showTypeOf(adaptive));
-
-console.log(screens);
-console.log(getRollbackMessage(fullPrice));
-console.log(servicePercentPrice);
-
-
+appPriceCalc.start()
 
